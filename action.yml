@@ -1,0 +1,47 @@
+name: "AisyahTerininda CLI"
+author: "Aisyah Terininda"
+description: "Setup AWS CLI to use in github actions"
+branding:
+  icon: 'thumbs-up'
+  color: 'white'
+inputs:
+  region:
+    description: "AWS Region"
+    required: true
+  access-key-id:
+    description: "AWS Access Key ID"
+    required: true
+  secret-access-key:
+    description: "AWS Secret Access Key"
+    required: true
+  aws-cli-version:
+    description: "AWS CLI Version to Install"
+    required: false
+    default: ""
+  output-format:
+    description: "AWS CLI output format"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Setup and Configure AWS CLI
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        # if aws-cli-version is empty string then install latest
+        if [ -z "${{ inputs.aws-cli-version }}" ]; then
+          pip install awscli
+        else
+          pip install awscli==${{ inputs.aws-cli-version }}
+        fi
+        aws configure set default.region ${{ inputs.region }}
+        aws configure set aws_access_key_id ${{ inputs.access-key-id }}
+        aws configure set aws_secret_access_key ${{ inputs.secret-access-key }}
+        # -n to check if following string is not empty
+        if [ -n "${{ inputs.output-format }}" ]; then
+          aws configure set default.output ${{ inputs.output-format }}
+        fi
+      shell: bash
+    - name: Check AWS CLI Version
+      run:  aws --version
+      shell: bash
